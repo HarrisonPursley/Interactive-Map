@@ -10,7 +10,7 @@ const myMap = {
     buildMap(){
         this.map = L.map('map', {
             center: this.coords,
-            zoom: 14,
+            zoom: 8,
         });
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -33,35 +33,33 @@ const myMap = {
         }
     }
 }
-function geoFindMe(){
-    const status = document.querySelector("#status");
-    const mapLink = document.querySelector("#map-link");
-
-    mapLink.href = "";
-    mapLink.textContent = "";
-
-    function success(position){
-        const latitude = position.coords.latitude;
-        const longitude = positions.coords.longitude;
-
-        status.textContent = "";
-        mapLink.href = '';
-        mapLink.textContent = 'Latitude: ${latitude} °, Longitude: ${longitude} °';
-    }
-    function errorCallback(error){
-        alert('ERROR(${error.code}): ${error.message}');
-    }
-    const options = {
-        enableHighAccuracy: true,
-        maximumAge: 30000,
-        timeout: 27000,
-    };
-    const watchID = navigator.geolocation.watchPosition(success, error, options);
+async function geoFindMe(){
+    const pos = await new Promise((resolve, reject) => {
+		navigator.geolocation.getCurrentPosition(resolve, reject)
+	});
+	return [pos.coords.latitude, pos.coords.longitude]
 }
 
-var map = L.map('map').setView([latitude, longitude], 14);
+async function getFoursquare(business) {
+	const options = {
+		method: 'GET',
+		headers: {
+		Accept: 'application/json',
+		Authorization: 'fsq3ATzZbmcGhdeFafr73wZcnJ+LlN6bK+4dh19a7ClS4u8='
+		}
+	}
+	let limit = 5
+	let lat = myMap.coordinates[0]
+	let lon = myMap.coordinates[1]
+	let response = await fetch(`https://api.foursquare.com/v3/places/search?&query=${business}&limit=${limit}&ll=${lat}%2C${lon}`, options)
+	let data = await response.text()
+	let parsedData = JSON.parse(data)
+	let businesses = parsedData.results
+	return businesses
+}
+
+var map = L.map('map').setView([0, 0], 13);
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
-
