@@ -21,6 +21,16 @@ const myMap = {
         .addTo(this.map)
         .bindPopup('You are here!')
         .openPopup()
+    },
+    addMarkers(){
+        for (var i = 0; i < this.businesses.length; i++){
+            this.markers = L.marker([
+                this.businesses[i].latitude,
+                this.businesses[i].longitude,
+            ])
+                .bindPopup(`${this.businesses[i].name}`)
+                .addTo(this.map)
+        }
     }
 }
 function geoFindMe(){
